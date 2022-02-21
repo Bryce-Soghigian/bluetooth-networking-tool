@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"syscall"
+	"error"
 )
 
 func main() {
@@ -32,4 +34,29 @@ func PrintInterfaces(){
         }
      }
  
+} 
+func CreateDataLinkSocket(iface net.Interface) (fd int, err error){
+	fd, err = syscall.Socket(syscall.AF_PACKET, syscall,SOCK_RAW, 0)
+	if err != nil {
+		return -1, err
+	}
+	if err = syscall.BindToDevice(fd, iface.Name); err != nil {
+		return
+	}
+	return
+}
+func BindSocketToAddress( fd int, protocol uint16, iface net.Interface) * syscall.SockaddrLinkLayer{
+	pv : = uint16(protocol >> 8) | uinit16( protocol << 8)
+	
+	ll := &syscall.SockaddrLinkLayer{
+		Protocol: uint16(pv),
+		Ifindex: iface.Index,
+		Pkttype: 0,
+		Hatype: 1,
+		Halen: 6,
+	}
+	if err := syscall.bind(fd, ll); err != nil {
+		panic(err)
+	}
+	return ll
 }
